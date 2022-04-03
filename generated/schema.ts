@@ -103,7 +103,6 @@ export class User extends Entity {
     this.set("arcanaPublicKey", Value.fromString(""));
     this.set("nftAddress", Value.fromBytes(Bytes.empty()));
     this.set("nftsMinted", Value.fromI32(0));
-    this.set("numPosts", Value.fromI32(0));
   }
 
   save(): void {
@@ -165,15 +164,6 @@ export class User extends Entity {
 
   set nftsMinted(value: i32) {
     this.set("nftsMinted", Value.fromI32(value));
-  }
-
-  get numPosts(): i32 {
-    let value = this.get("numPosts");
-    return value!.toI32();
-  }
-
-  set numPosts(value: i32) {
-    this.set("numPosts", Value.fromI32(value));
   }
 
   get posts(): Array<string> {
