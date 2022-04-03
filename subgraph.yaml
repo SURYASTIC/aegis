@@ -1,0 +1,29 @@
+specVersion: 0.0.1
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: Aegis
+    network: mumbai
+    source:
+      address: "0xF42a31EB6940B58534925A335428B7DAC9DAc035"
+      abi: Aegis
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - PostCreated
+        - UserCreated
+        - UserFollowed
+      abis:
+        - name: Aegis
+          file: ./abis/Aegis.json
+      eventHandlers:
+        - event: PostCreated(indexed address,indexed uint256,indexed bool,string,string[],uint256)
+          handler: handlePostCreated
+        - event: UserCreated(string,address,string,address)
+          handler: handleUserCreated
+        - event: UserFollowed(address,address)
+          handler: handleUserFollowed
+      file: ./src/mapping.ts
