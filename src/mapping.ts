@@ -1,10 +1,5 @@
 import { Address } from "@graphprotocol/graph-ts";
-import {
-  Aegis,
-  PostCreated,
-  UserCreated,
-  UserFollowed,
-} from "../generated/Aegis/Aegis";
+import { PostCreated, UserCreated } from "../generated/Aegis/Aegis";
 import {
   AegisSupporterToken,
   Transfer,
@@ -12,7 +7,7 @@ import {
 
 import { AegisSupporterToken as AegisSupporterTokenTemplate } from "../generated/templates";
 
-import { Follow, Post, User } from "../generated/schema";
+import { AST, Post, User } from "../generated/schema";
 
 export function handlePostCreated(event: PostCreated): void {
   // Load the post author user entity
@@ -45,19 +40,10 @@ export function handleUserCreated(event: UserCreated): void {
   AegisSupporterTokenTemplate.create(event.params.nftAddress);
 }
 
-export function handleUserFollowed(event: UserFollowed): void {
-  // Create a follow entity
-  const followId =
-    event.params.follower.toHexString() +
-    "-" +
-    event.params.followed.toHexString();
-  const follow = new Follow(followId);
-  follow.follower = event.params.follower.toHexString();
-  follow.followed = event.params.followed.toHexString();
-  follow.save();
-}
-
 export function handleTransfer(event: Transfer): void {
+  const astId =
+    event.address.toHexString() + "-" + event.params.tokenId.toString();
+
   if (event.params.from === Address.zero()) {
     // Get the AST contract
     const nftContract = AegisSupporterToken.bind(event.address);
@@ -66,7 +52,21 @@ export function handleTransfer(event: Transfer): void {
     if (!user) {
       throw new Error("Invalid AST user");
     }
-    // Increase the nftsMinted counter of that user
-    user.nftsMinted = user.nftsMinted + 1;
+
+    // Create an AST entity
+    const ast = new AST(astId);
+    ast.tokenId = event.params.tokenId;
+    ast.mintedTo = event.params.to.toHexString();
+    ast.holder = event.params.to.toHexString();
+    ast.user = user.id;
+    ast.save();
+  } else {
+    // Load the AST entity and update
+    const ast = AST.load(astId);
+    if (!ast) {
+      throw new Error("AST entity not found");
+    }
+    ast.holder = event.params.to.toHexString();
+    ast.save();
   }
 }

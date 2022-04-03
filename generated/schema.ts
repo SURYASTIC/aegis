@@ -102,8 +102,6 @@ export class User extends Entity {
     this.set("name", Value.fromString(""));
     this.set("arcanaPublicKey", Value.fromString(""));
     this.set("nftAddress", Value.fromBytes(Bytes.empty()));
-    this.set("nftsMinted", Value.fromI32(0));
-    this.set("numPosts", Value.fromI32(0));
   }
 
   save(): void {
@@ -158,24 +156,6 @@ export class User extends Entity {
     this.set("nftAddress", Value.fromBytes(value));
   }
 
-  get nftsMinted(): i32 {
-    let value = this.get("nftsMinted");
-    return value!.toI32();
-  }
-
-  set nftsMinted(value: i32) {
-    this.set("nftsMinted", Value.fromI32(value));
-  }
-
-  get numPosts(): i32 {
-    let value = this.get("numPosts");
-    return value!.toI32();
-  }
-
-  set numPosts(value: i32) {
-    this.set("numPosts", Value.fromI32(value));
-  }
-
   get posts(): Array<string> {
     let value = this.get("posts");
     return value!.toStringArray();
@@ -185,48 +165,50 @@ export class User extends Entity {
     this.set("posts", Value.fromStringArray(value));
   }
 
-  get followers(): Array<string> {
-    let value = this.get("followers");
+  get nftMinted(): Array<string> {
+    let value = this.get("nftMinted");
     return value!.toStringArray();
   }
 
-  set followers(value: Array<string>) {
-    this.set("followers", Value.fromStringArray(value));
+  set nftMinted(value: Array<string>) {
+    this.set("nftMinted", Value.fromStringArray(value));
   }
 
-  get following(): Array<string> {
-    let value = this.get("following");
+  get nftHolding(): Array<string> {
+    let value = this.get("nftHolding");
     return value!.toStringArray();
   }
 
-  set following(value: Array<string>) {
-    this.set("following", Value.fromStringArray(value));
+  set nftHolding(value: Array<string>) {
+    this.set("nftHolding", Value.fromStringArray(value));
   }
 }
 
-export class Follow extends Entity {
+export class AST extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
 
-    this.set("follower", Value.fromString(""));
-    this.set("followed", Value.fromString(""));
+    this.set("tokenId", Value.fromBigInt(BigInt.zero()));
+    this.set("mintedTo", Value.fromString(""));
+    this.set("user", Value.fromString(""));
+    this.set("holder", Value.fromString(""));
   }
 
   save(): void {
     let id = this.get("id");
-    assert(id != null, "Cannot save Follow entity without an ID");
+    assert(id != null, "Cannot save AST entity without an ID");
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        `Entities of type Follow must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+        `Entities of type AST must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
-      store.set("Follow", id.toString(), this);
+      store.set("AST", id.toString(), this);
     }
   }
 
-  static load(id: string): Follow | null {
-    return changetype<Follow | null>(store.get("Follow", id));
+  static load(id: string): AST | null {
+    return changetype<AST | null>(store.get("AST", id));
   }
 
   get id(): string {
@@ -238,21 +220,39 @@ export class Follow extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get follower(): string {
-    let value = this.get("follower");
+  get tokenId(): BigInt {
+    let value = this.get("tokenId");
+    return value!.toBigInt();
+  }
+
+  set tokenId(value: BigInt) {
+    this.set("tokenId", Value.fromBigInt(value));
+  }
+
+  get mintedTo(): string {
+    let value = this.get("mintedTo");
     return value!.toString();
   }
 
-  set follower(value: string) {
-    this.set("follower", Value.fromString(value));
+  set mintedTo(value: string) {
+    this.set("mintedTo", Value.fromString(value));
   }
 
-  get followed(): string {
-    let value = this.get("followed");
+  get user(): string {
+    let value = this.get("user");
     return value!.toString();
   }
 
-  set followed(value: string) {
-    this.set("followed", Value.fromString(value));
+  set user(value: string) {
+    this.set("user", Value.fromString(value));
+  }
+
+  get holder(): string {
+    let value = this.get("holder");
+    return value!.toString();
+  }
+
+  set holder(value: string) {
+    this.set("holder", Value.fromString(value));
   }
 }
