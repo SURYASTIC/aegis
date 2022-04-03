@@ -1,58 +1,72 @@
-import { BigInt } from "@graphprotocol/graph-ts"
+import { Address } from "@graphprotocol/graph-ts";
 import {
   Aegis,
   PostCreated,
   UserCreated,
-  UserFollowed
-} from "../generated/Aegis/Aegis"
-import { ExampleEntity } from "../generated/schema"
+  UserFollowed,
+} from "../generated/Aegis/Aegis";
+import {
+  AegisSupporterToken,
+  Transfer,
+} from "../generated/templates/AegisSupporterToken/AegisSupporterToken";
+
+import { AegisSupporterToken as AegisSupporterTokenTemplate } from "../generated/templates";
+
+import { Follow, Post, User } from "../generated/schema";
 
 export function handlePostCreated(event: PostCreated): void {
-  // Entities can be loaded from the store using a string ID; this ID
-  // needs to be unique across all entities of the same type
-  let entity = ExampleEntity.load(event.transaction.from.toHex())
-
-  // Entities only exist after they have been saved to the store;
-  // `null` checks allow to create entities on demand
-  if (!entity) {
-    entity = new ExampleEntity(event.transaction.from.toHex())
-
-    // Entity fields can be set using simple assignments
-    entity.count = BigInt.fromI32(0)
+  // Load the post author user entity
+  const user = User.load(event.params.user.toHexString());
+  if (!user) {
+    throw new Error("Invalid post author");
   }
 
-  // BigInt and BigDecimal math are supported
-  entity.count = entity.count + BigInt.fromI32(1)
-
-  // Entity fields can be set based on event parameters
-  entity.user = event.params.user
-  entity.postIndex = event.params.postIndex
-
-  // Entities can be written to the store with `.save()`
-  entity.save()
-
-  // Note: If a handler doesn't require existing field values, it is faster
-  // _not_ to load the entity from the store. Instead, create it fresh with
-  // `new Entity(...)`, set the fields that should be updated and save the
-  // entity back to the store. Fields that were not set or unset remain
-  // unchanged, allowing for partial updates to be applied.
-
-  // It is also possible to access smart contracts from mappings. For
-  // example, the contract that has emitted the event can be connected to
-  // with:
-  //
-  // let contract = Contract.bind(event.address)
-  //
-  // The following functions can then be called on this contract to access
-  // state variables and other data:
-  //
-  // - contract.manager(...)
-  // - contract.maxNumAttachments(...)
-  // - contract.maxPostLength(...)
-  // - contract.userHasFollowerNft(...)
-  // - contract.users(...)
+  // Create a post entity
+  const postId =
+    event.params.user.toHexString() + "-" + event.params.postIndex.toString();
+  const post = new Post(postId);
+  post.isPaid = event.params.isPaid;
+  post.attachments = event.params.attachments;
+  post.text = event.params.text;
+  post.timestamp = event.params.timestamp;
+  post.author = user.id;
+  post.save();
 }
 
-export function handleUserCreated(event: UserCreated): void {}
+export function handleUserCreated(event: UserCreated): void {
+  // Create a user entity
+  const user = new User(event.params.publicKey.toHexString());
+  user.name = event.params.name;
+  user.arcanaPublicKey = event.params.arcanaPublicKey;
+  user.nftAddress = event.params.nftAddress;
+  user.save();
 
-export function handleUserFollowed(event: UserFollowed): void {}
+  // Start indexing the AST tokens
+  AegisSupporterTokenTemplate.create(event.params.nftAddress);
+}
+
+export function handleUserFollowed(event: UserFollowed): void {
+  // Create a follow entity
+  const followId =
+    event.params.follower.toHexString() +
+    "-" +
+    event.params.followed.toHexString();
+  const follow = new Follow(followId);
+  follow.follower = event.params.follower.toHexString();
+  follow.followed = event.params.followed.toHexString();
+  follow.save();
+}
+
+export function handleTransfer(event: Transfer): void {
+  if (event.params.from === Address.zero()) {
+    // Get the AST contract
+    const nftContract = AegisSupporterToken.bind(event.address);
+    // Load the user entity associated with the AST
+    const user = User.load(nftContract.user().toHexString());
+    if (!user) {
+      throw new Error("Invalid AST user");
+    }
+    // Increase the nftsMinted counter of that user
+    user.nftsMinted = user.nftsMinted + 1;
+  }
+}

@@ -1,6 +1,25 @@
-type ExampleEntity @entity {
+type Post @entity {
   id: ID!
-  count: BigInt!
-  user: Bytes! # address
-  postIndex: BigInt! # uint256
+  isPaid: Boolean!
+  text: String!
+  attachments: [String!]!
+  timestamp: BigInt!
+  author: User!
+}
+
+type User @entity {
+  id: ID!
+  name: String!
+  arcanaPublicKey: String!
+  nftAddress: Bytes!
+  nftsMinted: Int!
+  posts: [Post!]! @derivedFrom(field: "author")
+  followers: [Follow!]! @derivedFrom(field: "followed")
+  following: [Follow!]! @derivedFrom(field: "follower")
+}
+
+type Follow @entity {
+  id: ID!
+  follower: User!
+  followed: User!
 }

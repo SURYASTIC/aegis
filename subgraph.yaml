@@ -8,6 +8,7 @@ dataSources:
     source:
       address: "0xF42a31EB6940B58534925A335428B7DAC9DAc035"
       abi: Aegis
+      startBlock: 25629922
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
@@ -26,4 +27,23 @@ dataSources:
           handler: handleUserCreated
         - event: UserFollowed(address,address)
           handler: handleUserFollowed
+      file: ./src/mapping.ts
+templates:
+  - kind: ethereum
+    name: AegisSupporterToken
+    network: mumbai
+    source:
+      abi: AegisSupporterToken
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - Transfer
+      abis:
+        - name: AegisSupporterToken
+          file: ./abis/AegisSupporterToken.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
       file: ./src/mapping.ts
