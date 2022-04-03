@@ -23,28 +23,24 @@ export class PostCreated__Params {
     this._event = event;
   }
 
-  get user(): Address {
+  get author(): Address {
     return this._event.parameters[0].value.toAddress();
   }
 
-  get postIndex(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
-  }
-
   get isPaid(): boolean {
-    return this._event.parameters[2].value.toBoolean();
+    return this._event.parameters[1].value.toBoolean();
   }
 
   get text(): string {
-    return this._event.parameters[3].value.toString();
+    return this._event.parameters[2].value.toString();
   }
 
   get attachments(): Array<string> {
-    return this._event.parameters[4].value.toStringArray();
+    return this._event.parameters[3].value.toStringArray();
   }
 
   get timestamp(): BigInt {
-    return this._event.parameters[5].value.toBigInt();
+    return this._event.parameters[4].value.toBigInt();
   }
 }
 
@@ -100,31 +96,22 @@ export class UserFollowed__Params {
   }
 }
 
-export class Aegis__usersResultNumPostsStruct extends ethereum.Tuple {
-  get _value(): BigInt {
-    return this[0].toBigInt();
-  }
-}
-
 export class Aegis__usersResult {
   value0: string;
   value1: Address;
   value2: string;
   value3: Address;
-  value4: Aegis__usersResultNumPostsStruct;
 
   constructor(
     value0: string,
     value1: Address,
     value2: string,
-    value3: Address,
-    value4: Aegis__usersResultNumPostsStruct
+    value3: Address
   ) {
     this.value0 = value0;
     this.value1 = value1;
     this.value2 = value2;
     this.value3 = value3;
-    this.value4 = value4;
   }
 
   toMap(): TypedMap<string, ethereum.Value> {
@@ -133,7 +120,6 @@ export class Aegis__usersResult {
     map.set("value1", ethereum.Value.fromAddress(this.value1));
     map.set("value2", ethereum.Value.fromString(this.value2));
     map.set("value3", ethereum.Value.fromAddress(this.value3));
-    map.set("value4", ethereum.Value.fromTuple(this.value4));
     return map;
   }
 }
@@ -229,7 +215,7 @@ export class Aegis extends ethereum.SmartContract {
   users(param0: Address): Aegis__usersResult {
     let result = super.call(
       "users",
-      "users(address):(string,address,string,address,(uint256))",
+      "users(address):(string,address,string,address)",
       [ethereum.Value.fromAddress(param0)]
     );
 
@@ -237,15 +223,14 @@ export class Aegis extends ethereum.SmartContract {
       result[0].toString(),
       result[1].toAddress(),
       result[2].toString(),
-      result[3].toAddress(),
-      changetype<Aegis__usersResultNumPostsStruct>(result[4].toTuple())
+      result[3].toAddress()
     );
   }
 
   try_users(param0: Address): ethereum.CallResult<Aegis__usersResult> {
     let result = super.tryCall(
       "users",
-      "users(address):(string,address,string,address,(uint256))",
+      "users(address):(string,address,string,address)",
       [ethereum.Value.fromAddress(param0)]
     );
     if (result.reverted) {
@@ -257,8 +242,7 @@ export class Aegis extends ethereum.SmartContract {
         value[0].toString(),
         value[1].toAddress(),
         value[2].toString(),
-        value[3].toAddress(),
-        changetype<Aegis__usersResultNumPostsStruct>(value[4].toTuple())
+        value[3].toAddress()
       )
     );
   }

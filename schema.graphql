@@ -12,14 +12,15 @@ type User @entity {
   name: String!
   arcanaPublicKey: String!
   nftAddress: Bytes!
-  nftsMinted: Int!
   posts: [Post!]! @derivedFrom(field: "author")
-  followers: [Follow!]! @derivedFrom(field: "followed")
-  following: [Follow!]! @derivedFrom(field: "follower")
+  nftsMinted: [AST!]! @derivedFrom(field: "user")
+  nftsHolding: [AST!]! @derivedFrom(field: "holder")
 }
 
-type Follow @entity {
+type AST @entity {
   id: ID!
-  follower: User!
-  followed: User!
+  tokenId: BigInt!
+  mintedTo: User!
+  user: User!
+  holder: User!
 }

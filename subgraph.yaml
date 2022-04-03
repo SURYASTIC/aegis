@@ -6,9 +6,9 @@ dataSources:
     name: Aegis
     network: mumbai
     source:
-      address: "0xF42a31EB6940B58534925A335428B7DAC9DAc035"
+      address: "0x3DaC356f783b8D69d723ed93F35147d0e6555c55"
       abi: Aegis
-      startBlock: 25629922
+      startBlock: 25785017
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
@@ -16,12 +16,11 @@ dataSources:
       entities:
         - PostCreated
         - UserCreated
-        - UserFollowed
       abis:
         - name: Aegis
           file: ./abis/Aegis.json
       eventHandlers:
-        - event: PostCreated(indexed address,indexed uint256,indexed bool,string,string[],uint256)
+        - event: PostCreated(indexed address,indexed bool,string,string[],uint256)
           handler: handlePostCreated
         - event: UserCreated(string,address,string,address)
           handler: handleUserCreated
