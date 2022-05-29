@@ -16,7 +16,7 @@ export function handlePostCreated(event: PostCreated): void {
     throw new Error("Invalid post author");
   }
 
-  // Create a post entity
+  // Create a post entity.
   const postId =
     event.params.author.toHexString() + "-" + event.params.timestamp.toString();
   const post = new Post(postId);
